@@ -26,6 +26,8 @@ body {
   align-items: stretch;
 }
 
+/* 标题 + 文本 */
+
 h1 {
   margin: 0 0 8px;
   font-size: 1.6rem;
@@ -37,6 +39,8 @@ p {
   color: #c7c9d3;
   text-align: left;
 }
+
+/* 顶部状态条：Balance + Timer */
 
 .status-bar {
   display: flex;
@@ -50,6 +54,8 @@ p {
   margin-left: auto;
   font-weight: 500;
 }
+
+/* 中间的阴阳平衡条 */
 
 .bar-container {
   position: relative;
@@ -82,6 +88,8 @@ p {
   box-shadow: 0 0 10px rgba(255, 171, 145, 0.9);
 }
 
+/* 食物卡片区域 */
+
 .cards-container {
   display: flex;
   flex-wrap: wrap;
@@ -102,7 +110,7 @@ p {
   align-items: center;
   gap: 6px;
   min-width: 120px;
-  max-width: 150px;
+  max-width: 160px;
   text-align: left;
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s;
 }
@@ -135,13 +143,15 @@ p {
 }
 
 .food-name {
-  font-size: 0.85rem;
+  font-size: 0.86rem;
 }
 
 .food-meta {
   font-size: 0.75rem;
   opacity: 0.85;
 }
+
+/* 提示信息 + 按钮 */
 
 .game-message {
   min-height: 22px;
@@ -174,6 +184,8 @@ p {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
 }
+
+/* 小屏适配 */
 
 @media (max-width: 480px) {
   h1 {
