@@ -1,9 +1,14 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
-  const root = document.getElementById("game-root");
-  if (!root) return;
+  console.log("Yin & Yang Food Balance: script loaded.");
 
-  // 阴阳食物表
+  const root = document.getElementById("game-root");
+  if (!root) {
+    console.error("#game-root not found");
+    return;
+  }
+
+  // 阴阳食物表：姓名 + emoji + 类型 + 阴阳分值
   const FOODS = [
     { name: "牛肉 (Beef)", emoji: "🥩", type: "yang", delta: 1 },
     { name: "羊肉 (Lamb)", emoji: "🍖", type: "yang", delta: 2 },
@@ -17,12 +22,14 @@ document.addEventListener("DOMContentLoaded", () => {
     { name: "螃蟹 (Crab)", emoji: "🦀", type: "yin", delta: -2 }
   ];
 
-  let balance = 0;
-  let timeLeft = 60;
-  let gameOver = false;
+  // 游戏状态
+  let balance = 0;       // 阴阳平衡值
+  let timeLeft = 60;     // 剩余秒数
+  let gameOver = false;  // 游戏是否结束
   let spawnTimer = null;
   let countdownTimer = null;
 
+  // 构建 UI
   root.innerHTML = "";
 
   const title = document.createElement("h1");
@@ -52,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   barContainer.className = "bar-container";
 
   const barFill = document.createElement("div");
-  barFill.className = "bar-fill neutral";
+  barFill.className = "bar-fill";
   barContainer.appendChild(barFill);
 
   const cardsContainer = document.createElement("div");
@@ -74,25 +81,28 @@ document.addEventListener("DOMContentLoaded", () => {
   root.appendChild(message);
   root.appendChild(restartBtn);
 
+  // 更新 UI
   function updateUI() {
     balanceValue.textContent = balance.toString();
     timerLabel.textContent = `Time left: ${timeLeft}s`;
 
+    // 把 balance (-10 ~ +10) 映射为 0% ~ 100%
     const percent = ((balance + 10) / 20) * 100;
     barFill.style.left = `${percent}%`;
 
+    // 条的颜色
     if (balance < -3) {
-      barFill.classList.remove("neutral", "yang");
+      barFill.classList.remove("yang");
       barFill.classList.add("yin");
     } else if (balance > 3) {
-      barFill.classList.remove("neutral", "yin");
+      barFill.classList.remove("yin");
       barFill.classList.add("yang");
     } else {
       barFill.classList.remove("yin", "yang");
-      barFill.classList.add("neutral");
     }
   }
 
+  // 生成一个随机食物卡片
   function spawnCard() {
     if (gameOver) return;
 
@@ -134,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     cardsContainer.appendChild(card);
 
+    // 5 秒不点就自动消失
     setTimeout(() => {
       if (cardsContainer.contains(card) && !gameOver) {
         cardsContainer.removeChild(card);
@@ -141,16 +152,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000);
   }
 
+  // 检查是否过度失衡
   function checkState() {
     if (Math.abs(balance) > 7) {
       endGame(false);
     }
   }
 
+  // 结束游戏
   function endGame(win) {
     gameOver = true;
     clearInterval(spawnTimer);
     clearInterval(countdownTimer);
+
     if (win) {
       message.textContent = "恭喜！你用饮食保持了阴阳平衡。";
       message.classList.remove("lose");
@@ -160,9 +174,13 @@ document.addEventListener("DOMContentLoaded", () => {
       message.classList.remove("win");
       message.classList.add("lose");
     }
+
+    console.log("Game over. Win:", win, "Final balance:", balance);
   }
 
+  // 开始一局游戏
   function startGame() {
+    console.log("Game start");
     balance = 0;
     timeLeft = 60;
     gameOver = false;
@@ -184,11 +202,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
+  // 点击 Restart
   function restartGame() {
     clearInterval(spawnTimer);
     clearInterval(countdownTimer);
     startGame();
   }
 
+  // 初始化启动
   startGame();
 });
