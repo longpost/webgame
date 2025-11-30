@@ -1,160 +1,166 @@
-// main.js
-document.addEventListener("DOMContentLoaded", () => {
-  const root = document.getElementById("game-root");
-  if (!root) return;
+* {
+  box-sizing: border-box;
+}
 
-  let balance = 0;      // -10（偏阴）~ +10（偏阳）
-  let timeLeft = 60;    // 游戏时间 60 秒
-  let gameOver = false;
-  let spawnTimer = null;
-  let countdownTimer = null;
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: radial-gradient(circle at top, #101520 0%, #05060a 55%, #000 100%);
+  color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
 
-  root.innerHTML = "";
+#game-root {
+  width: min(90vw, 640px);
+  padding: 20px 18px 18px;
+  border-radius: 16px;
+  background: rgba(8, 10, 20, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
 
-  const title = document.createElement("h1");
-  title.textContent = "Yin & Yang Balance Game";
+h1 {
+  margin: 0 0 8px;
+  font-size: 1.6rem;
+}
 
-  const info = document.createElement("p");
-  info.textContent = "点击 Yin 或 Yang 食物卡片，尽量把平衡维持在 -7 到 +7 之间，撑过 60 秒。";
+p {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  color: #c7c9d3;
+  text-align: left;
+}
 
-  const statusBar = document.createElement("div");
-  statusBar.className = "status-bar";
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
 
-  const balanceLabel = document.createElement("span");
-  balanceLabel.textContent = "Balance: ";
+.timer-label {
+  margin-left: auto;
+  font-weight: 500;
+}
 
-  const balanceValue = document.createElement("span");
-  balanceValue.id = "balance-value";
+.bar-container {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #1b1f2b;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
 
-  const timerLabel = document.createElement("span");
-  timerLabel.className = "timer-label";
+.bar-fill {
+  position: absolute;
+  top: -4px;
+  width: 10px;
+  height: 14px;
+  border-radius: 999px;
+  background: #e0f7fa;
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px rgba(129, 212, 250, 0.8);
+}
 
-  statusBar.appendChild(balanceLabel);
-  statusBar.appendChild(balanceValue);
-  statusBar.appendChild(timerLabel);
+.bar-fill.yin {
+  background: #80cbc4;
+  box-shadow: 0 0 10px rgba(128, 203, 196, 0.8);
+}
 
-  const barContainer = document.createElement("div");
-  barContainer.className = "bar-container";
+.bar-fill.yang {
+  background: #ffab91;
+  box-shadow: 0 0 10px rgba(255, 171, 145, 0.9);
+}
 
-  const barFill = document.createElement("div");
-  barFill.className = "bar-fill neutral";
-  barContainer.appendChild(barFill);
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  min-height: 80px;
+  margin-bottom: 12px;
+}
 
-  const cardsContainer = document.createElement("div");
-  cardsContainer.className = "cards-container";
+.food-card {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s;
+}
 
-  const message = document.createElement("div");
-  message.className = "game-message";
+.food-card.yin {
+  background: #263238;
+  color: #b2dfdb;
+  box-shadow: 0 0 8px rgba(178, 223, 219, 0.35);
+}
 
-  const restartBtn = document.createElement("button");
-  restartBtn.textContent = "Restart";
-  restartBtn.className = "restart-btn";
-  restartBtn.addEventListener("click", restartGame);
+.food-card.yang {
+  background: #f4511e;
+  color: #ffe0b2;
+  box-shadow: 0 0 8px rgba(255, 138, 101, 0.45);
+}
 
-  root.appendChild(title);
-  root.appendChild(info);
-  root.appendChild(statusBar);
-  root.appendChild(barContainer);
-  root.appendChild(cardsContainer);
-  root.appendChild(message);
-  root.appendChild(restartBtn);
+.food-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
 
-  function updateUI() {
-    balanceValue.textContent = balance.toString();
-    timerLabel.textContent = `Time left: ${timeLeft}s`;
+.game-message {
+  min-height: 22px;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
 
-    const percent = ((balance + 10) / 20) * 100;
-    barFill.style.left = `${percent}%`;
+.game-message.win {
+  color: #a5d6a7;
+}
 
-    if (balance < -3) {
-      barFill.classList.remove("neutral", "yang");
-      barFill.classList.add("yin");
-    } else if (balance > 3) {
-      barFill.classList.remove("neutral", "yin");
-      barFill.classList.add("yang");
-    } else {
-      barFill.classList.remove("yin", "yang");
-      barFill.classList.add("neutral");
-    }
+.game-message.lose {
+  color: #ef9a9a;
+}
+
+.restart-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, #26a69a, #7e57c2);
+  color: #fff;
+  align-self: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.restart-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.4rem;
   }
-
-  function spawnCard() {
-    if (gameOver) return;
-
-    const type = Math.random() < 0.5 ? "Yin" : "Yang";
-    const card = document.createElement("button");
-    card.className = `food-card ${type.toLowerCase()}`;
-    card.textContent = type === "Yin" ? "Yin 食物" : "Yang 食物";
-
-    card.addEventListener("click", () => {
-      if (gameOver) return;
-      if (type === "Yin") {
-        balance -= 1;
-      } else {
-        balance += 1;
-      }
-      cardsContainer.removeChild(card);
-      checkState();
-      updateUI();
-    });
-
-    cardsContainer.appendChild(card);
-
-    setTimeout(() => {
-      if (cardsContainer.contains(card) && !gameOver) {
-        cardsContainer.removeChild(card);
-      }
-    }, 5000);
+  .status-bar {
+    flex-direction: column;
+    align-items: flex-start;
   }
-
-  function checkState() {
-    if (Math.abs(balance) > 7) {
-      endGame(false);
-    }
+  .timer-label {
+    margin-left: 0;
   }
+}
 
-  function endGame(win) {
-    gameOver = true;
-    clearInterval(spawnTimer);
-    clearInterval(countdownTimer);
-    if (win) {
-      message.textContent = "恭喜！你成功维持了阴阳平衡。";
-      message.classList.remove("lose");
-      message.classList.add("win");
-    } else {
-      message.textContent = "失衡过大，游戏失败。";
-      message.classList.remove("win");
-      message.classList.add("lose");
-    }
-  }
-
-  function startGame() {
-    balance = 0;
-    timeLeft = 60;
-    gameOver = false;
-    message.textContent = "";
-    cardsContainer.innerHTML = "";
-
-    updateUI();
-
-    spawnTimer = setInterval(spawnCard, 1500);
-    countdownTimer = setInterval(() => {
-      if (gameOver) return;
-      timeLeft -= 1;
-      if (timeLeft <= 0) {
-        timeLeft = 0;
-        endGame(true);
-      }
-      updateUI();
-    }, 1000);
-  }
-
-  function restartGame() {
-    clearInterval(spawnTimer);
-    clearInterval(countdownTimer);
-    startGame();
-  }
-
-  startGame();
-});
 
