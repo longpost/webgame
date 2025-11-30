@@ -3,6 +3,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const root = document.getElementById("game-root");
   if (!root) return;
 
+  // 阴阳食物表
+  const FOODS = [
+    { name: "牛肉 (Beef)", emoji: "🥩", type: "yang", delta: 1 },
+    { name: "羊肉 (Lamb)", emoji: "🍖", type: "yang", delta: 2 },
+    { name: "辣椒 (Chili)", emoji: "🌶️", type: "yang", delta: 3 },
+    { name: "生姜 (Ginger)", emoji: "🫚", type: "yang", delta: 2 },
+    { name: "西兰花 (Broccoli)", emoji: "🥦", type: "yin", delta: -1 },
+    { name: "黄瓜 (Cucumber)", emoji: "🥒", type: "yin", delta: -2 },
+    { name: "梨 (Pear)", emoji: "🍐", type: "yin", delta: -1 },
+    { name: "西瓜 (Watermelon)", emoji: "🍉", type: "yin", delta: -3 },
+    { name: "绿豆汤 (Mung bean soup)", emoji: "🥣", type: "yin", delta: -2 },
+    { name: "螃蟹 (Crab)", emoji: "🦀", type: "yin", delta: -2 }
+  ];
+
   let balance = 0;
   let timeLeft = 60;
   let gameOver = false;
@@ -12,11 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
   root.innerHTML = "";
 
   const title = document.createElement("h1");
-  title.textContent = "Yin & Yang Balance Game";
+  title.textContent = "Yin & Yang Food Balance";
 
   const info = document.createElement("p");
   info.textContent =
-    "点击 Yin 或 Yang 食物卡片，尽量把平衡维持在 -7 到 +7 之间，撑过 60 秒。";
+    "点击不同食物卡片：阳性食物让数值上升，阴性食物让数值下降。尽量让 Balance 保持在 -7 到 +7 之间，撑过 60 秒。";
 
   const statusBar = document.createElement("div");
   statusBar.className = "status-bar";
@@ -82,14 +96,37 @@ document.addEventListener("DOMContentLoaded", () => {
   function spawnCard() {
     if (gameOver) return;
 
-    const type = Math.random() < 0.5 ? "Yin" : "Yang";
+    const food = FOODS[Math.floor(Math.random() * FOODS.length)];
+
     const card = document.createElement("button");
-    card.className = `food-card ${type.toLowerCase()}`;
-    card.textContent = type === "Yin" ? "Yin 食物" : "Yang 食物";
+    card.className = `food-card ${food.type}`;
+
+    const emojiSpan = document.createElement("span");
+    emojiSpan.className = "food-emoji";
+    emojiSpan.textContent = food.emoji;
+
+    const textWrap = document.createElement("div");
+    textWrap.className = "food-text";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "food-name";
+    nameSpan.textContent = food.name;
+
+    const metaSpan = document.createElement("span");
+    metaSpan.className = "food-meta";
+    const sign = food.delta > 0 ? "+" : "";
+    const yinYangLabel = food.type === "yang" ? "Yang" : "Yin";
+    metaSpan.textContent = `${yinYangLabel} ${sign}${food.delta}`;
+
+    textWrap.appendChild(nameSpan);
+    textWrap.appendChild(metaSpan);
+
+    card.appendChild(emojiSpan);
+    card.appendChild(textWrap);
 
     card.addEventListener("click", () => {
       if (gameOver) return;
-      balance += type === "Yin" ? -1 : 1;
+      balance += food.delta;
       cardsContainer.removeChild(card);
       checkState();
       updateUI();
@@ -115,11 +152,11 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(spawnTimer);
     clearInterval(countdownTimer);
     if (win) {
-      message.textContent = "恭喜！你成功维持了阴阳平衡。";
+      message.textContent = "恭喜！你用饮食保持了阴阳平衡。";
       message.classList.remove("lose");
       message.classList.add("win");
     } else {
-      message.textContent = "失衡过大，游戏失败。";
+      message.textContent = "吃得太偏了，阴阳失衡，游戏失败。";
       message.classList.remove("win");
       message.classList.add("lose");
     }
