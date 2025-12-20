@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------
   // Language
   // ---------------------------
-  let lang = "zh"; // "zh" | "en"
+  let lang = "en"; // "zh" | "en"
   function t(obj) {
     return obj[lang] ?? obj.zh;
   }
@@ -552,7 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
       name.textContent =
         lang === "zh"
           ? `${food.name.zh}（${food.name.en}）`
-          : `${food.name.en} (${food.name.zh})`;
+          : `${food.name.en}`;
 
       const meta = document.createElement("div");
       meta.className = "card-meta";
